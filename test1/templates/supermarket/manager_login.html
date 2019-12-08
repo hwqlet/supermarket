@@ -1,0 +1,87 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>管理员登录界面</title>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <style>
+        .bo{
+            text-align: center;
+        }
+    </style>
+    <script>
+        function login_manager() {
+            //cookies保存职员登录信息
+            localStorage.setItem('employee_account',$('#employee_account').val());
+            localStorage.setItem('employee_password',$('#employee_password').val());
+            var csrf_token = $('input[name=csrfmiddlewaretoken]').val();
+            document.getElementById('form_manager').action='/manager_login/';
+            document.getElementById('form_manager').submit();
+            //ajax请求后端无法进行重定向,因为重定向需要刷新界面,所以要用表单提交
+            /*$.ajax({
+                type:'post',
+                url:"/manager_login/",
+                data:{
+                    csrfmiddlewaretoken:csrf_token,
+                    account:$('#employee_account').val(),
+                    password:$('#employee_password').val()
+                },
+                success:function (result) {
+                    // todo 进行跳转
+                    var data=JSON.parse(result);
+                    alert(data['result']);
+                    window.location.href="{%url 'employee_index'%}";
+                    //将在后端进行重定向
+                }
+            })
+             */
+        }
+        function reset(){
+            $('input text').val('');
+        }
+    </script>
+</head>
+<body class="bo">
+{%csrf_token%}
+    <fieldset>
+        <legend>职员登录</legend>
+        <!--post要到manager_login视图函数中去，在视图函数中进行重定向-->
+        <form id="form_manager" method="post" action="">
+        {%csrf_token%}
+        <table align="center" border="0">
+            <tr>
+                <td>
+                    账号：
+                </td>
+                <td>
+                    <input type="text" id="employee_account" name="account" width="26" />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    密码：
+                </td>
+                <td>
+                    <input type="password" id="employee_password" name="password" width="26" />
+                </td>
+            </tr>
+            <tr>
+                <input type="text" class="textcode" id="verificationCode" placeholder="请输入验证码">
+            <div>
+                <canvas id="mycanvas" width='80' height='34'></canvas>
+                <p id="code-timeout-p" style="display: none">验证码超时</p>
+            </div>
+            </tr>
+        </table>
+        </form>
+        <br />
+        <br />
+        <input type="button" value="登录" id="btn_login" onclick="login_manager()"/>&nbsp;&nbsp;
+        <input type="button" value="退出" id="btn_quit" />&nbsp;&nbsp;
+        <input type="button" value="重置" id="btn_reset" />&nbsp;&nbsp;
+    </fieldset>
+<!--而且这个必须放在元素的后面，不然js函数不知道调用哪个组件id-->
+<script src="{% static 'js/Login.js' %}"></script>
+</body>
+</html>

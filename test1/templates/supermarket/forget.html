@@ -1,0 +1,70 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>修改密码</title>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+
+    <script type="text/javascript">
+        function change(){
+            var csrf_token=$('input[name=csrfmiddlewaretoken]').val();
+            if ($('#new_passid').value===$('#again_passid').value){
+            $.ajax({
+                type: 'post',
+                url: '/change_pass/result/',
+                data: {
+                    csrfmiddlewaretoken:csrf_token,
+                    username:$('#fgt_userid').val(),
+                    shenfenzheng:$('#fgt_shenfenid').val(),
+                    mima:$('#new_passid').val()
+                },
+                success:function (result) {
+                    var data=JSON.parse(result);
+                    alert(data["result"]);
+                }
+            });
+            }
+            else{
+                alert('两次输入的密码不正确');
+            }
+        }
+    </script>
+</head>
+<body>
+    <script src="{% static 'js/avoid.js' %}"></script>
+    <fieldset>
+        <legend>修改密码</legend>
+        <form action="{%url 'change_pass_result'%}" method="post" id="form_change">
+            {%csrf_token%}
+        <table>
+            <tr>
+                <td>用户名：</td>
+                <td>
+                    <input type="text" name="fgt_username" id="fgt_userid" width="25"/>
+                </td>
+            </tr>
+            <tr>
+                <td>身份证号：</td>
+                <td>
+                    <input type="text" name="fgt_shenfen" id="fgt_shenfenid" width="25"/>
+                </td>
+            </tr>
+            <tr>
+                <td>请输入新密码：</td>
+                <td>
+                    <input type="text" name="new_pass" id="new_passid" width="25"/>
+                </td>
+            </tr>
+            <tr>
+                <td>再次输入密码：</td>
+                <td>
+                    <input type="text" name="again_pass" id="again_passid" width="25"/>
+                </td>
+            </tr>
+        </table>
+        </form>
+        <input type="button" value="修改" name="change_pass" id="btn_change_pass" onclick="change()"/>
+    </fieldset>
+</body>
+</html>

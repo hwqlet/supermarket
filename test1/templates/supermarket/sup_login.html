@@ -1,0 +1,56 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录界面</title>
+    <style>
+        .bo{
+            text-align:center;
+            }
+    </style>
+    <!--link标签一般用于外部css的引用-->
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+
+</head>
+<body class="bo">
+<script src="{% static 'js/avoid.js' %}"></script>
+<script src="{% static 'js/Login.js' %}"></script>
+<fieldset>
+    <legend align="center">登录框</legend>
+    <form action="{%url 'login_submit'%}" id="form_submit" method="post">
+        {%csrf_token%}
+        <!--这个token不能少-->
+        <table align="center" border="1">
+            <tr>
+                <td>
+                    用户名：
+                </td>
+                <td>
+                    <input type="text" name="username" id="user_id" width="20"/>
+                </td>
+            </tr>
+            <tr>
+                <td>密码：</td>
+                <td><input type="password" name="password" id="pass" width="20" /></td>
+            </tr>
+            <tr>
+                <input type="text" class="textcode" id="verificationCode" placeholder="请输入验证码">
+                <div>
+                    <canvas id="mycanvas" width='80' height='34'></canvas>
+                    <p id="code-timeout-p" style="display: none">验证码超时</p>
+                </div>
+            </tr>
+        </table>
+        <br />
+    </form>
+    <input type="button" value="重置" name="reset" id="btn_reset" onclick="reset()"/>
+    <input type="button" value="登录" name="login" id="btn_login" onclick="login()"/>
+    <input type="button" value="返回主界面" name="back" id="btn_back" onclick="back()"/><br/><br />
+    <input type="button" value="没有账号？现在注册" name="register" id="btn_reg" onclick="register_new()"/>
+    <input type="button" value="忘记密码?" name="fright" id="btn_forget" onclick="forget()"/>
+</fieldset>
+<!--在html文档加载的时候就会加载Login.js中的代码-->
+<script src="{% static 'js/Login.js' %}"></script>
+</body>
+</html>

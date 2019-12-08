@@ -1,0 +1,226 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>职员界面</title>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <style>
+        .bo{
+            text-align: center;
+            background: #b9bbbe;
+        }
+    </style>
+    <script src="{%static 'js/echarts.simple.min.js'%}"></script>
+    <script src="{%static 'js/echarts.js'%}"></script>
+    <script>
+        var gongzi= new Array();
+        function quit() {
+            window.location.href="{%url 'manager_login'%}";
+        }
+        function search(){
+            var csrf_token = $('input[name=csrfmiddlewaretoken]').val();
+            $.ajax({
+                type:'post',
+                url:'/employee_index/search/',
+                data:{
+                    csrfmiddlewaretoken:csrf_token,
+                    time_start:$('#select_zhangmu_time_start').val(),
+                    time_end:$('#select_zhangmu_time_end').val(),
+                    liansuodian_search:$('#select_zhangmu_liansuodian').val()
+                },
+                success:function (result) {
+                    var data=JSON.parse(result);
+                    //gongzi=data['jinglihwq 2019-12-1'];
+                    console.log(data);
+                    //alert(data['result']);
+                    var chart_div=document.getElementById('echarts_container');
+                    var time_li=data['time'];
+                    var sum_li=data['sum'];
+                    mychart.hideLoading();
+                    mychart.setOption({
+                        title: {
+                            text: '销售情况',
+                        },
+                        tooltip: {},
+                        legend: {
+                            data:['销售额']
+                        },
+                        xAxis: {
+                            data: time_li
+                        },
+                        yAxis: {},
+                        series: [{
+                            name: '销量',
+                            type: 'bar',
+                            data: sum_li
+                        }]
+                    });
+                }
+            })
+        }
+        function gen_zhangdan(){
+            //todo 生成账单
+            var csrf_token = $('input[name=csrfmiddlewaretoken]').val();
+            $.ajax({
+                type:'post',
+                url:'/employee_index/gen_zhangdan/',
+                data:{
+                    csrfmiddlewaretoken:csrf_token,
+                    liansuodian:$('#select_liansuodian').val()
+                },
+                success:function(result){
+                    var data=JSON.parse(result);
+                    alert(data['result']);
+                }
+            })
+        }
+        function salary(){
+            var csrf_token = $('input[name=csrfmiddlewaretoken]').val();
+            $.ajax({
+                type:'post',
+                url:'/employee_index/salary/',
+                data:{
+                    csrfmiddlewaretoken:csrf_token,
+                    account_salary:localStorage.getItem('employee_account')
+                },
+                success:function(result){
+                    var data=JSON.parse(result);
+                    console.log(data);
+                    alert('你本月的的工资为：\n'+data['sum']+'RMB');
+                    var salary_div=document.getElementById('echarts_container');
+                    var nums=data['jingli_hwq 2019-12-01'];
+                    var names=['基础工资','绩效','出勤','违规','税金'];
+                    var datas=new Array();
+                    console.log(datas.length);
+                    for(var i=0;i<names.length;i++){
+                        //data=new Array();
+                        datas.push({'name':names[i],'value':nums[i]})
+                    }
+                    console.log(datas);
+                    //console.log(datas.length);
+
+                    //mychart.init(salary_div);
+                    var option={
+                        title:{
+                                text:'工资情况'
+                            },
+                        series:[{
+                            name:'工资分布',
+                            type:'pie',
+                            radius:'55%',
+                            tooltip:{
+                                trigger: 'item',
+                                formatter: "{a} <br/>{b}: {c} "
+                            },
+                            itemStyle:{
+                                normal:{
+                                    label:{
+                                        show:true
+                                    }
+                                }
+                            },
+                            data:datas
+                        }]
+                    };
+                    mychart.hideLoading();
+                    mychart.setOption(option);
+                }
+            })
+        }
+    </script>
+</head>
+<body class="bo">
+{%csrf_token%}
+    <script>
+        function protect(){
+            if(document.referrer==""){
+                alert('请先登录，小东西');
+                window.location.href='/manager_login/';
+            }
+        }
+        protect();
+    </script>
+    <script>
+        function middle(){
+            var csrf_token = $('input[name=csrfmiddlewaretoken]').val();
+            //alert(localStorage.getItem('employee_account'));
+            $.ajax({
+                type:'post',
+                url:'/employee_index/middle/',
+                data:{
+                    csrfmiddlewaretoken:csrf_token,
+                    account:localStorage.getItem('employee_account'),
+                    password:localStorage.getItem('employee_password')
+                },
+                success:function(result){
+                    var data=JSON.parse(result);
+                    console.log(data);
+                    //alert(data['authority']);
+                    if(data['authority']==='7'){
+                        $('#btn_search').hide();
+                        $('#select_zhangmu_time_start').hide();
+                        $('#select_zhangmu_time_end').hide();
+                        $('#select_zhangmu_liansuodian').hide();
+                    }
+                    if(data['authority']==='3'){
+                        $('#btn_search').hide();
+                        $('#select_zhangmu_time_start').hide();
+                        $('#select_zhangmu_time_end').hide();
+                        $('#select_zhangmu_liansuodian').hide();
+                        $('#select_liansuodian').hide();
+                        $('#btn_search').hide();
+                    }
+                    var sele=$('#select_liansuodian');
+                    var sele1=$('#select_zhangmu_liansuodian');
+                    for(var vv=0;vv<data['len'];vv++){
+                        options = document.createElement("option");
+                        options2 = document.createElement("option");
+                        options.text=data[vv].toString();
+                        options2.text=data[vv].toString();
+                        options.value=data[vv].toString();
+                        options2.value=data[vv].toString();
+                        sele.append(options);
+                        sele1.append(options2);
+                    }
+                    var sele_time_start=$('#select_zhangmu_time_start');
+                    var sele_time_end=$('#select_zhangmu_time_end');
+                    for(var vv=0;vv<data['time'].length;vv++){
+                        option_start=document.createElement("option");
+                        option_end=document.createElement("option");
+                        option_start.text=data['time'][vv].toString();
+                        option_end.text=data['time'][vv].toString();
+                        option_start.value=data['time'][vv].toString();
+                        option_end.value=data['time'][vv].toString();
+                        sele_time_start.append(option_start);
+                        sele_time_end.append(option_end);
+                    }
+                }
+            })
+        }
+        middle();
+    </script>
+    <fieldset>
+        <legend>职员操作</legend>
+        <input type="button" onclick="quit()" value="退出" id="btn_quit" />&nbsp;
+        <select id="select_zhangmu_time_start"></select>&nbsp;
+        <select id="select_zhangmu_time_end"></select>&nbsp;&nbsp;
+        <!--todo 做成图表的方式来查账-->
+        <select id="select_zhangmu_liansuodian"></select>&nbsp;
+        <input type="button" onclick="search()" value="查看账目" id="btn_search" />&nbsp;
+        <input type="button" onclick="gen_zhangdan()" value="生成账单" id="btn_zhangdan" />&nbsp;
+        <select id="select_liansuodian" onchange="xuanze(this)"></select><br />
+        <input type="button" id="btn_salary" value="工资查看" onclick="salary()"/>
+    </fieldset>
+    <div id="echarts_container" style="width: 600px;height:400px;border: #1b1e21">
+        <script>
+            var mychart=echarts.init(document.getElementById('echarts_container'));
+            mychart.showLoading();
+            //mychart.setOption(option);
+        </script>
+    </div>
+    <!--这是session中的变量-->
+    {{request.session.1}}
+    {{request.session.result}}
+</body>
+</html>

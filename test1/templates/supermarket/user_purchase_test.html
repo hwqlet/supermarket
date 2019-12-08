@@ -1,0 +1,36 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>智慧用电</title>
+    <script type="text/javascript" src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script>
+        function request() {
+            var csrf_token=$('input[name=csrfmiddlewaretoken]').val();
+            $.ajax({
+                type:'post',
+                datatype:'text',
+                url:'/electricity/',
+                data:{
+                    csrfmiddlewaretoken:csrf_token,
+                    gongshi:$('#gongshi_id').val()
+                },
+                success:function (result) {
+                    var data=JSON.parse(result);
+                    alert(data['result']);
+                }
+            })
+        }
+    </script>
+</head>
+<body>
+    <script src="{% static 'js/avoid.js' %}"></script>
+    <form name="form_elec" id="form_elec_id" action="">
+        {%csrf_token%}
+        请输入公式:<label for="gongshi_id"></label><input type="text" name="gongshi" id="gongshi_id" />
+        <input type="button" name="button_sub" id="btn_sub" value="提交" onclick="request()"/>
+    </form>
+</body>
+</html>

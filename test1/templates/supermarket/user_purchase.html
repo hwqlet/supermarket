@@ -1,0 +1,359 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>购买界面</title>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <script>
+        $(document).ready(function () {
+           $(":button").css("background-color","#B2E0FF");
+        });
+        //$(document).ready(function (data) {
+        //   var data_begin = JSON.parse(data[1]);
+        //   alert(data_begin);
+        //});
+        var globe_data;
+        var c;
+        var mouseover = function(id){
+            c = setTimeout(function(){
+                //alert('两秒之后才触发');
+                var csrf_token=$('input[name=csrfmiddlewaretoken]').val();
+                //$('#hidden_id_1').val(JSON.parse(id)['shangpinming_shangpin_online']);
+                //$('#hidden_id_2').val(JSON.parse(id)['changjia_shangpin_online']);
+                //传当前div的id值进来
+                var id_this=id;
+                var v1;
+                var v2;
+                if(id==='1'){
+                    v1=$('#hidden_id_1').val();
+                    v2=$('#hidden_id_2').val();
+                }
+                else if(id==='2'){
+                    v1=$('#hidden_id_3').val();
+                    v2=$('#hidden_id_4').val();
+                }
+                else if(id==='3'){
+                    v1=$('#hidden_id_5').val();
+                    v2=$('#hidden_id_6').val();
+                }
+                else if(id==='4'){
+                    v1=$('#hidden_id_7').val();
+                    v2=$('#hidden_id_8').val();
+                }
+                else if(id==='5'){
+                    v1=$('#hidden_id_9').val();
+                    v2=$('#hidden_id_10').val();
+                }
+                else{
+                    v1=$('#hidden_id_11').val();
+                    v2=$('#hidden_id_12').val();
+                }
+                //alert(id_this);//测试没有问题
+                $.ajax({
+                    type:'post',
+                    datatype:'text',
+                    url:'/user_purchase/',
+                    data:{
+                        csrfmiddlewaretoken:csrf_token,
+                        shangpinming:v1,
+                        changjia:v2
+                    },
+                    success:function (result) {
+                        var data=JSON.parse(result);
+                        alert('id:'+data["id"]+'\n'+
+                            '厂家:'+data["changjia_shangpin_online"]+'\n'+
+                            '商品名:'+data["shangpinming_shangpin_online"]+'\n'+
+                            '价格:'+data['danjia']+'\n'+
+                            '保质期:'+data["baozhiqi"]+'\n'+
+                            '余量:'+data['yuliang']);
+                        //问了专家说是可以收到,可以了
+                        var new_elem=$('<div>' + 'id:' + data['id'] +
+                            '厂家:' + data['changjia_shangpin_online'] +
+                            '商品名:' + data['shangpinming_shangpin_online'] +
+                            '价格:' + data['danjia'] +
+                            '保质期:' + data['baozhiqi'] +
+                            '余量:'+data['yuliang']+
+                            '</div>');
+                    }
+                });
+            },2000);
+        };
+        var mouseout = function(){
+            clearTimeout(c);
+        };
+
+        function user_extra(){
+            //这个函数使用来获取全局数据的
+            var csrf_token=$('input[name=csrfmiddlewaretoken]').val();
+            $.ajax({
+                type:'post',
+                url:'/user_extra/',
+                data:{
+                    csrfmiddlewaretoken:csrf_token
+                },
+                success:function(result){
+                    globe_data=JSON.parse(result);
+                    //alert(globe_data['1']['danjia']);//nice可以了
+                }
+            })
+        }
+        var dingdan_to=new Array();
+        var dingdan_back=new Array();
+        function set_num(th){
+            //this是这么用的吗,可以用this.id,this.value
+            //还有动态不断刷新获取数据来生成图表的js还不会
+            //或者用jQuery的$(this).val(),$(this).html(),$(this).attr('id',['settings'])
+            //alert($(th).attr('id'));
+            //var things_dict=new Array();
+            var things_array=new Array();
+            things_array.push(globe_data[$(th).parent().parent().attr('id')]['id']);
+            things_array.push($(th).val());
+            console.log(things_array);//测试没有问题
+            //这里没有问题，字典会进行更新
+            dingdan_to[$(th).parent().parent().attr('id').toString()]=things_array;
+            //dingdan.push(things_dict);
+            //console.log(things_dict);//测试没有问题
+            console.log(dingdan_to);
+            console.log(JSON.stringify(dingdan_to));
+            //alert(things_dict[1]);
+        }
+        function gen_dingdan(){
+            //todo  生成订单这时候后台要预扣除
+            //todo  最好是设置一个定时器，设置订单失效时间
+            var csrf_token=$('input[name=csrfmiddlewaretoken]').val();
+            //alert($('#select_id_1').val());测试通过
+            //alert(localStorage.getItem('username')+' '+' '+localStorage.getItem('password'));
+            var custom=localStorage.getItem('username');
+            $.ajax({
+                type:'post',
+                url:'/user_dingdan/',
+                data:{
+                    csrfmiddlewaretoken:csrf_token,
+                    things:JSON.stringify(dingdan_to),
+                    user:custom
+                },
+                success:function(result){
+                    var data=JSON.parse(result);
+                    var sum=0;
+                    var dingdan_string='订单详情:\n';
+                    dingdan_string+='商品名       '+'厂家        '+'单价        '+'数量        \n';
+                    dingdan_back=data;
+                    console.log(dingdan_back);//测试没有问题
+                    console.log(dingdan_back[1]['单价']);
+                    for (var x in dingdan_back){
+                        for (var y in dingdan_back[x]) {
+                            console.log(dingdan_back[x][y]);
+                        }
+                        sum+=(Number(dingdan_back[x]['单价'])*Number(dingdan_back[x]['数量']));
+                        dingdan_string+=dingdan_back[x]['商品名']+' '+dingdan_back[x]['厂家']+' '+
+                                dingdan_back[x]['单价']+' '+dingdan_back[x]['数量']+'\n';
+                    }
+                    dingdan_string+='总价:      '+sum+'\n';
+                    dingdan_string+='用户:      '+dingdan_back[1]['用户'];
+                    console.log(dingdan_string);
+                    alert(dingdan_string);
+                    console.log(dingdan_back[1]['用户']);
+                    //alert(dingdan_back['1']['数量']);//可以了
+                    //流程能够通顺
+                }
+            })
+        }
+        function buy(){
+            var csrf_token=$('input[name=csrfmiddlewaretoken]').val();
+            $.ajax({
+                //todo 最终购买的时候要扣除存货量
+                type:'post',
+                url:'/user_buy/',
+                data:{
+                    csrfmiddlewaretoken:csrf_token,
+                    thing:JSON.stringify(dingdan_back)
+                },
+                success:function (result) {
+                    var data=JSON.parse(result);
+                    alert(data['result']);
+                    window.location.href="{%url 'buy' %}";
+                }
+            })
+        }
+        function initial_select(){
+            var csrf_token=$('input[name=csrfmiddlewaretoken]').val();
+            $.ajax({
+                type:'post',
+                url:'/user_initial/',
+                data:{
+                    csrfmiddlewaretoken:csrf_token
+                },
+                //这个函数还可以获取页面渲染做不到的一些数据
+                success:function (result) {
+                    //{{result|safe}};这样也是一种方法，后端数据传到前端js中
+                    var data=JSON.parse(result);
+                    //alert(data[4]);
+                    //alert(data[6]);
+                    //alert(data[1]+data[2]+data[3]+data[4]+data[5]+data[6]);//这里没有什么问题
+                    var sele=$("select");//获取所有的select元素
+                    //alert(sele.length);都没有问题
+                    var i=1;
+                    for(var x=0;x<sele.length;x++){
+                        for(var v=0;v<=data[i];v++){
+                            var options=document.createElement('option');
+                            options.text=v.toString();
+                            options.value=v.toString();
+                            sele[x].append(options);//这里确实是每个div进行添加的
+                            //todo 要怎么让它添加的option数量为余量,ok了
+                        }
+                        i++;
+                    }
+                    // alert(data['1']);测试没有问题
+                }
+            })
+        }
+    </script>
+</head>
+<body>
+    <script src="{% static 'js/avoid.js' %}"></script>
+    {%csrf_token%}<!--这里等于是给了一个全局的请求token-->
+    <script>initial_select()</script><!--页面加载时执行的初始化函数-->
+    <script>user_extra()</script><!--获取额外的信息-->
+    <div class="container">
+    <div class="row">
+        <div id="1" class="col-lg-3 col-md-4 col-sm-6 col-xs-6" onmouseover="mouseover(this.id)" onmouseout="mouseout(this.id)"><!-- 大屏幕放3张略缩图，pc端放4张，平板和手机放6张-->
+            <div class="thumbnail">
+                <img src="{%static '6.jpg'%}" alt="wait"  class="img-responsive">
+                <input type="hidden" id="hidden_num_1" />
+                <select id="select_id_1" onchange="set_num(this)"></select>
+                <div class="caption">
+                    <form name="form_hidden" id="form_hidden_id_1" action="">
+                        {%csrf_token%}
+                        <input type="hidden" name="hidden_1" id="hidden_id_1" value="{{1.shangpinming_shangpin_online}}"/>
+                        <input type="hidden" name="hidden_2" id="hidden_id_2" value="{{1.changjia_shangpin_online}}"/>
+                    </form>
+                    <!--好像全部都得用js来渲染了-->
+                    <h4>{{1.shangpinming_shangpin_online}}</h4>
+                    <p style="color:red;">
+                        {%for m,n in 1.items%}
+                            {{m}}:{{n}}<br>
+                        {%endfor%}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div id="2" class="col-lg-3 col-md-4 col-sm-6 col-xs-6" onmouseover="mouseover(this.id)" onmouseout="mouseout(this.id)"><!-- 大屏幕放3张略缩图，pc端放4张，平板和手机放6张-->
+            <div class="thumbnail">
+                <img src="{%static '7.jpg'%}" alt="wait"  class="img-responsive">
+                <input type="hidden" id="hidden_num_2" />
+                <select id="select_id_2" onchange="set_num(this)" ></select>
+                <div class="caption">
+                    <form name="form_hidden" id="form_hidden_id_2" action="">
+                        {%csrf_token%}
+                        <input type="hidden" name="hidden_1" id="hidden_id_3" value="{{2.shangpinming_shangpin_online}}"/>
+                        <input type="hidden" name="hidden_2" id="hidden_id_4" value="{{2.changjia_shangpin_online}}"/>
+                    </form>
+                    <h4>{{2.shangpinming_shangpin_online}}</h4>
+                    <p style="color:red;">
+                        {%for m,n in 2.items%}
+                            {{m}}:{{n}}<br>
+                        {%endfor%}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div id="3" class="col-lg-3 col-md-4 col-sm-6 col-xs-6" onmouseover="mouseover(this.id)" onmouseout="mouseout(this.id)"><!-- 大屏幕放3张略缩图，pc端放4张，平板和手机放6张-->
+            <div class="thumbnail">
+                <img src="{%static '8.jpg'%}" alt="wait"  class="img-responsive">
+                <input type="hidden" id="hidden_num_3" />
+                <select id="select_id_3" onchange="set_num(this)"></select>
+                <div class="caption">
+                    <form name="form_hidden" id="form_hidden_id_3" action="">
+                        {%csrf_token%}
+                        <input type="hidden" name="hidden_1" id="hidden_id_5" value="{{3.shangpinming_shangpin_online}}"/>
+                        <input type="hidden" name="hidden_2" id="hidden_id_6" value="{{3.changjia_shangpin_online}}"/>
+                    </form>
+                    <h4>{{3.shangpinming_shangpin_online}}</h4>
+                    <p style="color:red;">
+                        {%for m,n in 3.items%}
+                            {{m}}:{{n}}<br>
+                        {%endfor%}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div id="4" class="col-lg-3 col-md-4 col-sm-6 col-xs-6" onmouseover="mouseover(this.id)" onmouseout="mouseout(this.id)"><!-- 大屏幕放3张略缩图，pc端放4张，平板和手机放6张-->
+            <div class="thumbnail">
+                <img src="{%static '9.jpg'%}" alt="wait"  class="img-responsive">
+                <input type="hidden" id="hidden_num_4" />
+                <select id="select_id_4" onchange="set_num(this)"></select>
+                <div class="caption">
+                    <form name="form_hidden" id="form_hidden_id_4" action="">
+                        {%csrf_token%}
+                        <input type="hidden" name="hidden_1" id="hidden_id_7" value="{{4.shangpinming_shangpin_online}}"/>
+                        <input type="hidden" name="hidden_2" id="hidden_id_8" value="{{4.changjia_shangpin_online}}"/>
+                    </form>
+                    <h4>{{4.shangpinming_shangpin_online}}</h4>
+                    <p style="color:red;">
+                        {%for m,n in 4.items%}
+                            {{m}}:{{n}}<br>
+                        {%endfor%}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div id="5" class="col-lg-3 col-md-4 col-sm-6 col-xs-6" onmouseover="mouseover(this.id)" onmouseout="mouseout(this.id)"><!-- 大屏幕放3张略缩图，pc端放4张，平板和手机放6张-->
+            <div class="thumbnail">
+                <img src="{%static '10.jpg'%}" alt="wait"  class="img-responsive">
+                <input type="hidden" id="hidden_num_5" />
+                <select id="select_id_5" onchange="set_num(this)"></select>
+                <div class="caption">
+                    <form name="form_hidden" id="form_hidden_id_5" action="">
+                        {%csrf_token%}
+                        <input type="hidden" name="hidden_1" id="hidden_id_9" value="{{5.shangpinming_shangpin_online}}"/>
+                        <input type="hidden" name="hidden_2" id="hidden_id_10" value="{{5.changjia_shangpin_online}}"/>
+                    </form>
+                    <h4>{{5.shangpinming_shangpin_online}}</h4>
+                    <p style="color:red;">
+                        {%for m,n in 5.items%}
+                            {{m}}:{{n}}<br>
+                        {%endfor%}
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div id="6" class="col-lg-3 col-md-4 col-sm-6 col-xs-6" onmouseover="mouseover(this.id)" onmouseout="mouseout(this.id)"><!-- 大屏幕放3张略缩图，pc端放4张，平板和手机放6张-->
+            <div class="thumbnail">
+                <img src="{%static '11.jpg'%}" alt="wait"  class="img-responsive">
+                <input type="hidden" id="hidden_num_6" />
+                <select id="select_id_6" onchange="set_num(this)"></select>
+                <div class="caption">
+                    <form name="form_hidden" id="form_hidden_id_6" action="">
+                        {%csrf_token%}
+                        <input type="hidden" name="hidden_1" id="hidden_id_11" value="{{6.shangpinming_shangpin_online}}"/>
+                        <input type="hidden" name="hidden_2" id="hidden_id_12" value="{{6.changjia_shangpin_online}}"/>
+                    </form>
+                    <h4>{{6.shangpinming_shangpin_online}}</h4>
+                    <p style="color:red;">
+                        {%for m,n in 6.items%}
+                            {{m}}:{{n}}<br>
+                        {%endfor%}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div><br /><br />
+        <input type="button" value="购买" id="btn_goumai" onclick="buy()" />&nbsp;&nbsp;&nbsp;
+        <input type="button" value="下单" id="btn_xiadan" onclick="gen_dingdan()" />
+    <br /><br />
+
+    <ul class="pagination">
+        <li><a href="#">&laquo;</a></li>
+	    <li><a href="#">1</a></li>
+	    <li><a href="#">2</a></li>
+	    <li><a href="#">3</a></li>
+	    <li><a href="#">4</a></li>
+	    <li><a href="#">5</a></li>
+	    <li><a href="#">&raquo;</a></li>
+    </ul>
+    </div>
+<a href="#" class="bind_hover_card" data-toggle="popover" data-placement="bottom" data-trigger="hover"></a>
+</body>
+</html>

@@ -1,0 +1,35 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>注册新用户</title>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+
+    <script>
+        function back(){
+            window.location.href="/login/";
+        }
+    </script>
+    <style>
+        .bo{
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="bo">
+    <script src="{% static 'js/avoid.js' %}"></script>
+    <fieldset style="width: 50%;align-items: center">
+        <legend align="center">注册框</legend>
+        <form action="{%url 'register'%}" method="post" id="form_register">
+            {%csrf_token%}
+            <table>
+                {{form.as_table}}
+            </table>
+            <input type="submit" name="register" id="btn_reg" value="注册" />
+
+        </form>
+        <input type="button" name="back" id="btn_back" value="返回" onclick="back()"/>
+    </fieldset>
+</body>
+</html>

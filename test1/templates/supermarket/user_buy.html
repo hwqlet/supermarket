@@ -1,0 +1,18 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>购买结果</title>
+    <script>
+        function keep(){
+            window.location.href="{%url 'user_purchase' %}";
+        }
+    </script>
+</head>
+<body>
+    <script src="{% static 'js/avoid.js' %}"></script>
+    {{result}}<br /><br />
+    <input type="button" value="继续逛逛" id="btn_keep" onclick="keep()" />
+</body>
+</html>

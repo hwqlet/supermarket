@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用户界面</title>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script>
+        function sub() {
+            // alert(localStorage.getItem('username'));测试没有问题
+            document.getElementById('h_username_id').value=localStorage.getItem('username');
+            document.getElementById('h_password_id').value=localStorage.getItem('password');
+            document.getElementById('myform').submit();
+        }
+    </script>
+    <script>
+        function quit(){
+            window.location.href="{%url 'home-site'%}";
+        }
+        function purchase(){
+            window.location.href="{%url 'user_purchase'%}";
+        }
+        function info(){
+            //todo 弹窗式显示个人信息，并且能够修改个人信息，跳转到改密码的界面
+            //todo
+            var u=localStorage.getItem('username');
+            var p=localStorage.getItem('password');
+            //alert(u+' '+p);//测试没有问题;
+            window.location.href="/user_info/";
+        }
+    </script>
+    <style>
+        .bo{
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="bo">
+    <script src="{% static 'js/avoid.js' %}"></script>
+    <form id="myform" name="user_info" method="post" action="{%url 'user_info'%}">
+        {%csrf_token%}
+        <input type="hidden" name="hidden_username" id="h_username_id" />
+        <input type="hidden" name="hidden_password" id="h_password_id" />
+    </form>
+    <input type="button" id="btn_quit" name="quit" value="退出" onclick="quit()"/>
+    <input type="button" id="btn_purchase" name="purchase" value="购买" onclick="purchase()"/>
+    <input type="button" id="btn_info" name="info" value="查看个人信息" onclick="sub()"/>
+</body>
+</html>

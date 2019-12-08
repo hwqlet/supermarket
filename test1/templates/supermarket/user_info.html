@@ -1,0 +1,57 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>用户信息</title>
+    <script src="https://apps.bdimg.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script>
+        function change_info() {
+            form = document.getElementById('id_change_info');
+            var token = $('input[name=csrfmiddlewaretoken]').val();
+            var name = document.getElementById('txt_username').value;
+            var pass = document.getElementById('txt_password').value;
+            var shenfenzheng = document.getElementById('txt_shenfenzheng').value;
+            var phone = document.getElementById('txt_phone').value;
+            $.ajax({
+                'type': 'post',
+                'url': '/change_info/',
+                'data': {
+                    csrfmiddlewaretoken: token,
+                    username: name,
+                    password: pass,
+                    shenfenzheng: shenfenzheng,
+                    phone: phone
+                },
+                success: function (result) {
+                    var data=JSON.parse(result);
+                    if(data['result']==='修改信息成功'){
+                        window.location.href="{%url 'user_index'%}"
+                    }
+                    alert(data['result']);
+                }
+            });
+        }
+        function back(){
+            window.location.href="{%url 'user_index'%}";
+        }
+    </script>
+</head>
+<body>
+    <script src="{% static 'js/avoid.js' %}"></script>
+    <fieldset>
+        <legend>用户信息</legend>
+        <form id="id_change_info" name="form_change_info" action="">
+            {%csrf_token%}
+            <p>账号：<input type="text" id="txt_username" value="{{username}}"/></p>
+            <p>密码：<input type="text" id="txt_password" value="{{password}}"/></p>
+            <p>身份证：<input type="text" id="txt_shenfenzheng" value="{{shenfenzheng}}"/></p>
+            <p>手机：<input type="text" id="txt_phone" value="{{user_phone}}"/></p>
+        </form>
+        <input type="button" name="tijiao" id="btn_tijiao" value="修改信息" onclick="change_info()"/>
+        &nbsp;&nbsp;<input type="button" name="back" id="btn_back" value="返回" onclick="back()"/>
+    </fieldset>
+
+
+</body>
+</html>
